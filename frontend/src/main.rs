@@ -50,18 +50,29 @@ fn run_app<B: ratatui::backend::Backend>(
     terminal: &mut Terminal<B>,
     app: &mut App,
 ) -> Result<()> {
+    use std::time::{Duration, Instant};
+    let mut last_key_time = Instant::now();
+    let debounce_duration = Duration::from_millis(150); // Prevent double key presses
+    
     loop {
         terminal.draw(|f| ui::draw(f, app))?;
 
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') if !app.is_input_active() => {
-                    if app.confirm_quit() {
-                        return Ok(());
+            let now = Instant::now();
+            
+            // Only process if enough time has passed since last key (except for typing)
+            if app.is_input_active() || now.duration_since(last_key_time) >= debounce_duration {
+                last_key_time = now;
+                
+                match key.code {
+                    KeyCode::Char('q') if !app.is_input_active() && !app.is_authenticated() => {
+                        if app.confirm_quit() {
+                            return Ok(());
+                        }
                     }
-                }
-                _ => {
-                    app.handle_key_event(key);
+                    _ => {
+                        app.handle_key_event(key);
+                    }
                 }
             }
         }

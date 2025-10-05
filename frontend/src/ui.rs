@@ -47,6 +47,8 @@ fn draw_content(f: &mut Frame, area: Rect, app: &App) {
         AppState::DisplayResult => draw_result(f, area, app),
         AppState::Normal => {
             match app.mode {
+                TerminalMode::Login => draw_login(f, area, app),
+                TerminalMode::Locked => draw_locked(f, area, app),
                 TerminalMode::Menu => draw_menu(f, area, app),
                 TerminalMode::GatekeepingVerify | TerminalMode::GatekeepingProcess => {
                     draw_gatekeeping(f, area, app)
@@ -54,7 +56,11 @@ fn draw_content(f: &mut Frame, area: Rect, app: &App) {
                 TerminalMode::CurrencyTransfer => draw_currency(f, area, app),
                 TerminalMode::UserSearch => draw_search(f, area, app),
                 TerminalMode::UserInfo => draw_user_info(f, area, app),
+                TerminalMode::UserManagement => draw_user_management(f, area, app),
+                TerminalMode::PermissionTree => draw_permission_tree(f, area, app),
+                TerminalMode::TerminalManagement => draw_terminal_management(f, area, app),
                 TerminalMode::Configuration => draw_config(f, area, app),
+                _ => draw_placeholder(f, area, app),
             }
         }
     }
@@ -99,30 +105,29 @@ fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
 }
 
 fn draw_menu(f: &mut Frame, area: Rect, app: &App) {
-    let menu_items = vec![
-        "Gatekeeping - Verify Access (Read Only)",
-        "Gatekeeping - Process Access (Execute)",
-        "Currency Transfer",
-        "User Search",
-        "User Information",
-        "Terminal Configuration",
-    ];
-
-    let items: Vec<ListItem> = menu_items
+    let available_items = app.get_available_menu_items();
+    
+    let items: Vec<ListItem> = available_items
         .iter()
         .enumerate()
-        .map(|(i, item)| {
+        .map(|(i, (_, name, _))| {
             let style = if i == app.selected_menu_item {
                 Style::default().fg(Color::Black).bg(Color::Cyan).add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::White)
             };
-            ListItem::new(*item).style(style)
+            ListItem::new(*name).style(style)
         })
         .collect();
 
+    let user_info = if let Some(user) = &app.terminal_user {
+        format!(" | Logged in as: {} {}", user.first_name, user.last_name)
+    } else {
+        String::new()
+    };
+
     let list = List::new(items)
-        .block(Block::default().borders(Borders::ALL).title("Select Mode"));
+        .block(Block::default().borders(Borders::ALL).title(format!("Select Mode{}", user_info)));
 
     f.render_widget(list, area);
 }
@@ -477,4 +482,145 @@ fn draw_result(f: &mut Frame, area: Rect, app: &App) {
 
         f.render_widget(paragraph, area);
     }
+}
+
+fn draw_login(f: &mut Frame, area: Rect, app: &App) {
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("Terminal Authentication Required", Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan))),
+        Line::from(""),
+        Line::from("Please scan your barcode or enter your credentials to access this terminal."),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled("l: ", Style::default().fg(Color::Yellow)),
+            Span::raw("Login with barcode"),
+        ]),
+        Line::from(""),
+        Line::from(Span::styled("Note: Only authorized personnel may use this terminal", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Login"))
+        .alignment(Alignment::Center);
+
+    f.render_widget(paragraph, area);
+}
+
+fn draw_locked(f: &mut Frame, area: Rect, app: &App) {
+    let user_name = if let Some(user) = &app.terminal_user {
+        format!("{} {}", user.first_name, user.last_name)
+    } else {
+        "Unknown".to_string()
+    };
+
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("🔒 TERMINAL LOCKED", Style::default().add_modifier(Modifier::BOLD).fg(Color::Red))),
+        Line::from(""),
+        Line::from(format!("Logged in as: {}", user_name)),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled("u: ", Style::default().fg(Color::Yellow)),
+            Span::raw("Unlock terminal"),
+        ]),
+        Line::from(""),
+        Line::from(Span::styled("This terminal has been locked for security", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Locked"))
+        .alignment(Alignment::Center);
+
+    f.render_widget(paragraph, area);
+}
+
+fn draw_user_management(f: &mut Frame, area: Rect, app: &App) {
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("User Management", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled("c: ", Style::default().fg(Color::Yellow)),
+            Span::raw("Create new user"),
+        ]),
+        Line::from(vec![
+            Span::styled("l: ", Style::default().fg(Color::Yellow)),
+            Span::raw("List all users"),
+        ]),
+        Line::from(vec![
+            Span::styled("s: ", Style::default().fg(Color::Yellow)),
+            Span::raw("Search users"),
+        ]),
+        Line::from(""),
+        Line::from(Span::styled("Manage system users and their access", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("User Management"))
+        .alignment(Alignment::Left);
+
+    f.render_widget(paragraph, area);
+}
+
+fn draw_permission_tree(f: &mut Frame, area: Rect, _app: &App) {
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("Permission Hierarchy", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(""),
+        Line::from("System Permissions:"),
+        Line::from("  ├─ system.admin - Full system administration"),
+        Line::from("  ├─ system.manage_users - Manage users"),
+        Line::from("  └─ system.manage_terminals - Manage terminals"),
+        Line::from(""),
+        Line::from("Custom Permissions:"),
+        Line::from("  ├─ checkpoint.a.access - Access Checkpoint A"),
+        Line::from("  ├─ checkpoint.b.access - Access Checkpoint B"),
+        Line::from("  ├─ store.purchase - Make purchases"),
+        Line::from("  └─ facility.entry - Enter facility"),
+        Line::from(""),
+        Line::from(Span::styled("Press ESC to return to menu", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Permission Tree"))
+        .alignment(Alignment::Left);
+
+    f.render_widget(paragraph, area);
+}
+
+fn draw_terminal_management(f: &mut Frame, area: Rect, _app: &App) {
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("Terminal Management", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled("c: ", Style::default().fg(Color::Yellow)),
+            Span::raw("Create new terminal"),
+        ]),
+        Line::from(""),
+        Line::from(Span::styled("Configure and manage terminal settings", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Terminal Management"))
+        .alignment(Alignment::Left);
+
+    f.render_widget(paragraph, area);
+}
+
+fn draw_placeholder(f: &mut Frame, area: Rect, app: &App) {
+    let text = vec![
+        Line::from(""),
+        Line::from(Span::styled("Feature In Development", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(""),
+        Line::from(format!("Mode: {:?}", app.mode)),
+        Line::from(""),
+        Line::from(Span::styled("Press ESC to return to menu", Style::default().fg(Color::Gray))),
+    ];
+
+    let paragraph = Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Coming Soon"))
+        .alignment(Alignment::Center);
+
+    f.render_widget(paragraph, area);
 }
