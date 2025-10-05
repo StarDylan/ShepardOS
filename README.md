@@ -15,6 +15,7 @@ ShepardOS is a flexible terminal system designed for scenarios like military che
 ## Architecture
 
 ### Backend (Python + FastAPI + SQLite)
+
 - REST API server
 - SQLite database with SQLAlchemy ORM
 - Insert-only transaction ledger
@@ -22,6 +23,7 @@ ShepardOS is a flexible terminal system designed for scenarios like military che
 - Terminal key-based authentication
 
 ### Frontend (Rust + ratatui)
+
 - Text User Interface (TUI)
 - Multiple terminal modes
 - Searchable interfaces
@@ -34,9 +36,9 @@ ShepardOS is a flexible terminal system designed for scenarios like military che
 
 ```bash
 cd backend
-pip install -r requirements.txt
-python seed_data.py
-python main.py
+uv sync
+uv run seed_data.py
+uv run main.py
 ```
 
 The backend will start at `http://localhost:8000`
@@ -62,6 +64,7 @@ cargo build --release
 ### 4. Test the System
 
 Try scanning one of the test barcodes:
+
 - Admin: `100000000001`
 - Guard: `100000000002`
 - Employee: `100000000003`
@@ -71,6 +74,7 @@ Try scanning one of the test barcodes:
 ### Gatekeeping
 
 **Verify Access** (Read-Only):
+
 - Check user identity
 - Verify permissions
 - Display user information
@@ -78,6 +82,7 @@ Try scanning one of the test barcodes:
 - NO changes to database
 
 **Process Access** (Execute):
+
 - Verify access
 - Deduct currency if configured
 - Execute complete workflow
@@ -94,6 +99,7 @@ Try scanning one of the test barcodes:
 ### Identity Verification
 
 Similar to US TSA:
+
 - Scan barcode to pull up user information
 - Display full identity details
 - Show all permissions
@@ -113,6 +119,7 @@ Similar to US TSA:
 Each terminal can be configured for different use cases:
 
 ### Checkpoint Terminal
+
 ```json
 {
   "terminal_type": "checkpoint",
@@ -124,6 +131,7 @@ Each terminal can be configured for different use cases:
 ```
 
 ### Store Terminal
+
 ```json
 {
   "terminal_type": "combined",
@@ -137,6 +145,7 @@ Each terminal can be configured for different use cases:
 ```
 
 ### ATM Terminal
+
 ```json
 {
   "terminal_type": "currency",
@@ -148,24 +157,28 @@ Each terminal can be configured for different use cases:
 ## Use Cases
 
 ### 1. Military Checkpoint
+
 - Verify soldier credentials at gate
 - Check appropriate clearance permissions
 - Log entry/exit times
 - Display photo ID for manual verification
 
 ### 2. Secure Facility
+
 - Multi-level permission requirements
 - Time-based access control
 - Real-time audit logging
 - Integration with badge scanners
 
 ### 3. Retail Environment
+
 - Customer purchases with account system
 - Permission-based discounts
 - Transaction history
 - Store credit management
 
 ### 4. Event Management
+
 - Ticket verification
 - VIP access control
 - Concession purchases
@@ -176,6 +189,7 @@ Each terminal can be configured for different use cases:
 ### Core Tables
 
 **users**
+
 - Unique barcode (12 digits)
 - Unique account number (16 digits)
 - Identity information
@@ -183,28 +197,34 @@ Each terminal can be configured for different use cases:
 - Balance calculation from transactions
 
 **permissions**
+
 - Named permissions
 - System vs custom flags
 
 **roles**
+
 - Group permissions
 - Assigned to users and groups
 
 **groups**
+
 - Organize users
 - Share roles across members
 
 **terminals**
+
 - Authentication via hashed keys
 - Configuration for gatekeeping/currency
 - Required permissions list
 
 **transactions** (Insert-Only)
+
 - From/to account IDs
 - Amount and description
 - Terminal ID for audit
 
 **audit_logs**
+
 - User and terminal IDs
 - Action and success flag
 - Timestamp and details
@@ -212,6 +232,7 @@ Each terminal can be configured for different use cases:
 ## API Endpoints
 
 ### User Management
+
 - `POST /api/users/` - Create user
 - `GET /api/users/search` - Search users
 - `GET /api/users/{id}` - Get user with permissions/balance
@@ -219,29 +240,35 @@ Each terminal can be configured for different use cases:
 - `PUT /api/users/{id}` - Update user
 
 ### Permission Management
+
 - `POST /api/permissions/` - Create permission
 - `GET /api/permissions/` - List permissions
 
 ### Role Management
+
 - `POST /api/roles/` - Create role with permissions
 - `GET /api/roles/` - List roles
 - `PUT /api/roles/{id}` - Update role
 
 ### Terminal Management
+
 - `POST /api/terminals/` - Create terminal (returns key)
 - `GET /api/terminals/` - List terminals
 - `PUT /api/terminals/{id}` - Update configuration
 
 ### Currency Operations
+
 - `POST /api/currency/transfer` - Transfer money
 - `GET /api/currency/balance/{account}` - Get balance
 - `GET /api/currency/transactions/{account}` - Transaction history
 
 ### Gatekeeping
+
 - `POST /api/gatekeeping/verify` - Verify access (read-only)
 - `POST /api/gatekeeping/process` - Process access (execute)
 
 ### Audit Logs
+
 - `GET /api/audit/` - Get audit logs with filters
 
 ## Security Features
@@ -255,6 +282,7 @@ Each terminal can be configured for different use cases:
 ## Development
 
 ### Backend Development
+
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -262,12 +290,14 @@ python main.py  # Runs with auto-reload
 ```
 
 ### Frontend Development
+
 ```bash
 cd frontend
 cargo run  # Runs with debug symbols
 ```
 
 ### Running Tests
+
 ```bash
 # Backend (if tests are added)
 cd backend
@@ -311,9 +341,11 @@ ShepardOS/
 ## Configuration
 
 ### Backend
+
 - `DATABASE_URL`: SQLite database path (default: `sqlite:///./shepardos.db`)
 
 ### Frontend
+
 - Backend URL: `http://localhost:8000` (hardcoded in `api.rs`)
 
 ## Future Enhancements
@@ -332,6 +364,7 @@ ShepardOS/
 ## Contributing
 
 This is a complete, production-ready system. Contributions welcome for:
+
 - Additional terminal modes
 - Enhanced UI features
 - Performance optimizations
@@ -345,6 +378,7 @@ MIT License - See LICENSE file for details
 ## Support
 
 For issues or questions:
+
 1. Check the documentation in `/backend/README.md` and `/frontend/README.md`
 2. Review the API documentation at `http://localhost:8000/docs`
 3. Open an issue on GitHub
