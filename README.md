@@ -32,12 +32,14 @@ ShepardOS is a flexible terminal system designed for scenarios like military che
 
 ## Quick Start
 
+> **Note**: The terminal now requires authentication! All test users have password: `password123`
+
 ### 1. Setup Backend
 
 ```bash
 cd backend
 uv sync
-uv run python seed_data.py
+uv run python seed_data.py  # Sets up users with password123
 uv run python main.py
 ```
 
@@ -53,21 +55,41 @@ cargo build --release
 ./target/release/shepardos-tui
 ```
 
-### 3. Configure Terminal
+### 3. Login to Terminal
 
-1. In the TUI, navigate to "Terminal Configuration"
+When you start the TUI, you'll see a login screen. Use these credentials:
+
+**All test users have the password:** `password123`
+
+- Admin: Barcode `100000000001` (Full system access)
+- Guard: Barcode `100000000002` (Checkpoint permissions)
+- Employee: Barcode `100000000003` (Basic access)
+
+**Steps:**
+1. Press 'l' to login
+2. Enter barcode (e.g., `100000000001`)
+3. Enter password: `password123`
+4. You'll see a menu based on your permissions
+
+### 4. Configure Terminal (First Time)
+
+After logging in, you need to configure the terminal authentication key:
+
+1. Select "Configuration" from menu
 2. Press 'k' to enter terminal key
 3. Use one of the test keys:
    - Checkpoint A: `checkpoint_a_test_key_12345`
    - Store Terminal: `store_terminal_test_key_67890`
 
-### 4. Test the System
+### 5. Test the System
 
-Try scanning one of the test barcodes:
+Now you can test gatekeeping by scanning other users:
 
-- Admin: `100000000001`
-- Guard: `100000000002`
-- Employee: `100000000003`
+- Return to menu
+- Select "Gatekeeping - Verify Access"
+- Press 's' to scan
+- Enter another user's barcode (e.g., `100000000002`)
+- See the verification results
 
 ## System Features
 
