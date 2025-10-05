@@ -66,6 +66,7 @@ class User(Base):
     phone = Column(String)
     date_of_birth = Column(String)
     photo_url = Column(String)
+    password_hash = Column(String)  # For terminal authentication
     pass_revoked = Column(Boolean, default=False)
     can_go_negative = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -572,18 +572,18 @@ impl App {
     }
     
     fn process_login_password(&mut self, password: String) {
-        // In a real system, this would validate the password against a hash
-        // For now, we'll use a simple check
         let barcode = self.from_account.clone();
         self.from_account.clear();
         
-        match self.api_client.get_user_by_barcode(&barcode) {
+        match self.api_client.authenticate(&barcode, &password) {
             Ok(user) => {
                 // Store password for unlock feature
                 self.terminal_password = password;
                 self.terminal_user = Some(user);
                 self.mode = TerminalMode::Menu;
-                self.message = "Login successful".to_string();
+                self.message = format!("Login successful! Welcome {} {}", 
+                    self.terminal_user.as_ref().unwrap().first_name,
+                    self.terminal_user.as_ref().unwrap().last_name);
                 self.state = AppState::Normal;
             }
             Err(e) => {

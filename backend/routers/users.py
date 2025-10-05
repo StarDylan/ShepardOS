@@ -219,3 +219,69 @@ async def generate_credentials(db: Session = Depends(get_db)):
         account_number = generate_account_number()
     
     return {"barcode": barcode, "account_number": account_number}
+
+@router.post("/authenticate")
+async def authenticate_user(barcode: str, password: str, db: Session = Depends(get_db)):
+    """Authenticate a user with barcode and password"""
+    import hashlib
+    
+    user = db.query(DBUser).filter(DBUser.barcode == barcode).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+    
+    if user.pass_revoked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Pass has been revoked"
+        )
+    
+    # Check password - if password_hash is None, allow any password (for migration)
+    if user.password_hash:
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        if password_hash != user.password_hash:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+    
+    # Return user with permissions and balance
+    permissions = get_user_permissions(db, user.id)
+    balance = calculate_balance(db, user.id)
+    
+    return UserWithPermissions(
+        id=user.id,
+        barcode=user.barcode,
+        account_number=user.account_number,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        phone=user.phone,
+        date_of_birth=user.date_of_birth,
+        photo_url=user.photo_url,
+        pass_revoked=user.pass_revoked,
+        can_go_negative=user.can_go_negative,
+        permissions=permissions,
+        balance=balance
+    )
+
+@router.post("/{user_id}/set-password")
+async def set_user_password(user_id: int, password: str, db: Session = Depends(get_db)):
+    """Set or update a user's password"""
+    import hashlib
+    
+    user = db.query(DBUser).filter(DBUser.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Hash the password
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    user.password_hash = password_hash
+    db.commit()
+    
+    return {"message": "Password updated successfully"}

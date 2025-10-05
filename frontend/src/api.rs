@@ -132,6 +132,13 @@ impl ApiClient {
         let result: Transaction = response.json()?;
         Ok(result)
     }
+    
+    pub fn authenticate(&self, barcode: &str, password: &str) -> Result<User> {
+        let url = format!("{}/api/users/authenticate?barcode={}&password={}", self.base_url, barcode, password);
+        let response = self.client.post(&url).send()?;
+        let result: User = response.json()?;
+        Ok(result)
+    }
 }
 
 impl Default for ApiClient {

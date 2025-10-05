@@ -81,7 +81,11 @@ def seed_database():
         db.commit()
         print(f"Created 2 groups")
         
-        # Create sample users
+        # Create sample users with default passwords
+        import hashlib
+        default_password = "password123"
+        password_hash = hashlib.sha256(default_password.encode()).hexdigest()
+        
         users = [
             User(
                 barcode="100000000001",
@@ -89,6 +93,7 @@ def seed_database():
                 first_name="John",
                 last_name="Admin",
                 email="admin@shepardos.local",
+                password_hash=password_hash,
                 can_go_negative=False
             ),
             User(
@@ -97,6 +102,7 @@ def seed_database():
                 first_name="Jane",
                 last_name="Guard",
                 email="guard@shepardos.local",
+                password_hash=password_hash,
                 can_go_negative=False
             ),
             User(
@@ -105,6 +111,7 @@ def seed_database():
                 first_name="Bob",
                 last_name="Employee",
                 email="employee@shepardos.local",
+                password_hash=password_hash,
                 can_go_negative=False
             ),
         ]
@@ -114,6 +121,8 @@ def seed_database():
             if not existing:
                 db.add(user)
         db.commit()
+        
+        print("Default password for test users: password123")
         
         # Assign roles to users (only if not already assigned)
         admin_user = db.query(User).filter(User.barcode == "100000000001").first()
