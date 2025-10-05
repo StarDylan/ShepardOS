@@ -18,32 +18,40 @@ Python FastAPI backend server for ShepardOS - a comprehensive gatekeeping, curre
 
 ### Install Dependencies
 
+This project uses [uv](https://github.com/astral-sh/uv) for fast Python package management.
+
 ```bash
 cd backend
-pip install -r requirements.txt
+
+# Install uv if not already installed
+pip install uv
+
+# Install dependencies
+uv sync
 ```
 
 ### Initialize Database
 
 ```bash
-python seed_data.py
+uv run python seed_data.py
 ```
 
 This will:
 - Create all database tables
 - Seed sample permissions, roles, groups, users, and terminals
 - Display test terminal keys
+- Script is idempotent (safe to run multiple times)
 
 ### Run the Server
 
 ```bash
-python main.py
+uv run python main.py
 ```
 
 Or with uvicorn directly:
 
 ```bash
-uvicorn main:app --reload
+uv run uvicorn main:app --reload
 ```
 
 The API will be available at: `http://localhost:8000`

@@ -21,11 +21,17 @@ if ! command -v cargo &> /dev/null; then
     exit 1
 fi
 
+# Check uv
+if ! command -v uv &> /dev/null; then
+    echo "Installing uv (Python package manager)..."
+    pip install uv
+fi
+
 # Setup backend
 echo "Setting up backend..."
 cd backend
-pip install -r requirements.txt
-python seed_data.py
+uv sync
+uv run python seed_data.py
 cd ..
 
 # Build frontend
@@ -41,7 +47,7 @@ echo "Setup complete!"
 echo "========================================="
 echo ""
 echo "To start the system:"
-echo "  1. Start backend:  cd backend && python main.py"
+echo "  1. Start backend:  cd backend && uv run python main.py"
 echo "  2. Start frontend: cd frontend && cargo run --release"
 echo ""
 echo "Terminal keys for testing:"

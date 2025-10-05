@@ -31,8 +31,11 @@ If the automatic setup doesn't work, follow these steps:
 
 ```bash
 cd backend
-pip install -r requirements.txt
-python seed_data.py
+# Install uv if needed
+pip install uv
+# Install dependencies and seed database
+uv sync
+uv run python seed_data.py
 ```
 
 #### 2. Build Frontend
@@ -57,7 +60,7 @@ This starts both backend and frontend together.
 **Terminal 1 - Backend:**
 ```bash
 cd backend
-python main.py
+uv run python main.py
 ```
 
 **Terminal 2 - Frontend:**

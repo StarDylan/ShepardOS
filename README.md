@@ -37,8 +37,8 @@ ShepardOS is a flexible terminal system designed for scenarios like military che
 ```bash
 cd backend
 uv sync
-uv run seed_data.py
-uv run main.py
+uv run python seed_data.py
+uv run python main.py
 ```
 
 The backend will start at `http://localhost:8000`

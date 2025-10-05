@@ -9,7 +9,7 @@ echo ""
 # Start backend in background
 echo "Starting backend server..."
 cd backend
-python main.py &
+uv run python main.py &
 BACKEND_PID=$!
 cd ..
 
